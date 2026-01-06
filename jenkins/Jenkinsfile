@@ -2,39 +2,38 @@ pipeline {
     agent any
 
     tools {
-        // This MUST match the name you gave Maven in 'Manage Jenkins' -> 'Tools'
         maven 'M3'
     }
 
     stages {
         stage('Build') {
             steps {
-                echo 'Building the application...'
-                // Compiles code and creates the JAR file
                 sh 'mvn -B -DskipTests clean package'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running Unit Tests...'
-                // Runs the JUnit tests
                 sh 'mvn test'
-            }
-            post {
-                always {
-                    // Collects test results even if they fail
-                    junit '**/target/surefire-reports/*.xml'
-                }
             }
         }
 
-        stage('Deliver') {
+        stage('Docker Build') {
             steps {
-                echo 'Build and Test were successful!'
-                echo 'Archiving the JAR file so it can be downloaded...'
-                // This makes the file appear on the Jenkins dashboard
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                echo 'Building Docker Image...'
+                // This command creates a Docker Image named "my-simple-app"
+                // The "." at the end tells it to look for the Dockerfile in the current folder
+                sh 'docker build -t my-simple-app .'
+            }
+        }
+
+        stage('Deploy Local') {
+            steps {
+                echo 'Deploying App Locally...'
+                // This stops any old version of the app and starts the new one
+                sh 'docker rm -f my-app-container || true'
+                sh 'docker run -d --name my-app-container my-simple-app'
+                echo 'App is now running as a container!'
             }
         }
     }
