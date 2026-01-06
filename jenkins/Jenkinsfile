@@ -1,27 +1,40 @@
 pipeline {
     agent any
-    options {
-        skipStagesAfterUnstable()
+
+    tools {
+        // This MUST match the name you gave Maven in 'Manage Jenkins' -> 'Tools'
+        maven 'M3'
     }
+
     stages {
         stage('Build') {
             steps {
+                echo 'Building the application...'
+                // Compiles code and creates the JAR file
                 sh 'mvn -B -DskipTests clean package'
             }
         }
+
         stage('Test') {
             steps {
+                echo 'Running Unit Tests...'
+                // Runs the JUnit tests
                 sh 'mvn test'
             }
             post {
                 always {
-                    junit 'target/surefire-reports/*.xml'
+                    // Collects test results even if they fail
+                    junit '**/target/surefire-reports/*.xml'
                 }
             }
         }
-        stage('Deliver') { 
+
+        stage('Deliver') {
             steps {
-                sh './jenkins/scripts/deliver.sh' 
+                echo 'Build and Test were successful!'
+                echo 'Archiving the JAR file so it can be downloaded...'
+                // This makes the file appear on the Jenkins dashboard
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
     }
