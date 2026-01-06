@@ -15,3 +15,5 @@ contains a shell script with commands that are executed when Jenkins processes
 the "Deliver" stage of your Pipeline.
 
 Testing 1 - first scm
+Testing 2 - second scm
+
